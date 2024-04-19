@@ -9,6 +9,8 @@ import re
 import shutil
 import time
 import traceback
+from abc import ABC
+
 import requests
 import tornado.web
 import tornado.websocket
@@ -24,7 +26,6 @@ from tools.freeport import FreePort
 from tools.config import config
 from tools.download import get_all
 from tools.heartbeat import heartbeat_connect, HeartbeatConnection, DEVICES
-
 
 HBC_ANDROID = HeartbeatConnection()
 FREE_PORT = FreePort("android")
@@ -115,7 +116,7 @@ class AppUninstallHandler(CorsMixin, tornado.web.RequestHandler):
     _uninstall_executor = ThreadPoolExecutor(4)
 
     @run_on_executor(executor='_uninstall_executor')
-    def app_uninstall(self, serial:str, package_name: str):
+    def app_uninstall(self, serial: str, package_name: str):
         device = adbclient.device(serial)
         output = device.uninstall(package_name)
         if "Success" not in output:
@@ -164,8 +165,9 @@ class DeviceScreenshotHandler(CorsMixin, tornado.web.RequestHandler):
             self.write({"status": 1000, "message": "获取截图错误: %s" % traceback.format_exc()})
 
 
-class DeviceHierarchyHandler(CorsMixin, tornado.web.RequestHandler):
+class DeviceHierarchyHandler(CorsMixin, tornado.web.RequestHandler, ABC):
     """ 设备控件 """
+
     async def get(self):
         serial = self.get_argument("serial")
         assert serial
@@ -241,11 +243,12 @@ async def async_main():
     HBC_ANDROID = conn
     await device_watch()
 
+    # bytes arguments were passed to a new process creation function. Breakpoints may not work correctly.
+
 
 def start_android():
     """启动入口"""
     try:
         IOLoop.current().run_sync(async_main)
     except KeyboardInterrupt:
-        logger.info("Interrupt catched")
-
+        logger.info("Interrupt caught")

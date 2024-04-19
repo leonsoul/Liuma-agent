@@ -1,14 +1,13 @@
-logzero==1.5.*
-adbutils>=0.8.1,<1.0
-tornado
-requests
-apkutils2
-uiautomator2>=2.5.9
-humanize
-tornado
-tidevice
-httpx
-weditor
+logzero== 1.7.0
+adbutils == 2.0.2
+tornado == 6.3.3
+requests == 2.31.0
+apkutils2 == 1.0.0
+uiautomator2==2.16.25
+humanize ==4.9.0
+tidevice == 0.12.9
+httpx == 0.25.2
+weditor ==0.7.2
 h26x-extractor==0.8.0
-bitstring
+bitstring == 4.0.2
 

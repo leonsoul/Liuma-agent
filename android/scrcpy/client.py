@@ -54,46 +54,103 @@ class ClientDevice:
         # 需要推操作失败的ws_client
         self.ws_touch_list = list()
 
+    # async def prepare_server(self):
+    #     commands2 = [
+    #         "adb", "-s", self.device_id, "shell",
+    #         "CLASSPATH=/data/local/tmp/scrcpy-server",
+    #         "app_process",
+    #         "/",
+    #         "com.genymobile.scrcpy.Server",
+    #         "1.24",  # Scrcpy server version
+    #         f"log_level=info",  # Log level: info, verbose...
+    #         f"max_size={self.max_size}",  # Max screen width (long side)
+    #         f"bit_rate={self.bit_rate}",  # Bitrate of video
+    #         f"max_fps={self.max_fps}",  # Max frame per second
+    #         f"lock_video_orientation=-1",    # Lock screen orientation
+    #         "tunnel_forward=true",  # Tunnel forward
+    #         f"control=true",  # Control enabled
+    #         f"display_id=0",  # Display id
+    #         f"show_touches=true",  # Show touches
+    #         f"stay_awake=false",  # scrcpy server Stay awake
+    #         f"codec_options=profile=1,level=2",  # Codec (video encoding) options
+    #         f"encoder_name=OMX.google.h264.encoder",  # Encoder name
+    #         f"power_off_on_close=false",  # Power off screen after server closed
+    #         "clipboard_autosync=false",  # auto sync clipboard
+    #         f"downsize_on_error=true",   # when encode screen error downsize and retry encode screen
+    #         "cleanup=true",     # enable cleanup thread
+    #         f"power_on=true",   # power on when scrcpy deploy
+    #         "send_device_meta=true",    # send device name, device resolution when video socket connect
+    #         f"send_frame_meta=false",    # receive frame_meta,
+    #         "send_dummy_byte=true",     # send dummy byte when video socket connect
+    #         "raw_video_stream=false",  # video_socket just receive raw_video_stream
+    #     ]
+    #     self.deploy_shell_socket = subprocess.Popen(commands2, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     res = self.deploy_shell_socket.stdout.readlines(3)
+    #     if len(res) == 1 and "Device" in res[0].decode():
+    #         logger.info("[%s] start scrcpy success" % self.device_id)
+    #     else:
+    #         logger.info("[%s] start scrcpy error" % self.device_id)
+    #         self.deploy_shell_socket = None
+    #         for ws_client in self.ws_client_list:
+    #             ws_client.close()
+    #         raise ConnectionError("启动scrcpy服务失败")
     async def prepare_server(self):
+        """
+        准备并启动服务器端的scrcpy服务。
+
+        此异步函数旨在配置并启动与设备关联的scrcpy服务器。它通过执行一系列命令来实现，
+        包括设置屏幕传输参数、启动scrcpy服务并检查服务是否成功启动。
+
+        返回值:
+            无
+        """
+        # 准备启动scrcpy服务的命令序列
         commands2 = [
             "adb", "-s", self.device_id, "shell",
             "CLASSPATH=/data/local/tmp/scrcpy-server",
             "app_process",
             "/",
             "com.genymobile.scrcpy.Server",
-            "1.24",  # Scrcpy server version
-            f"log_level=info",  # Log level: info, verbose...
-            f"max_size={self.max_size}",  # Max screen width (long side)
-            f"bit_rate={self.bit_rate}",  # Bitrate of video
-            f"max_fps={self.max_fps}",  # Max frame per second
-            f"lock_video_orientation=-1",    # Lock screen orientation
-            "tunnel_forward=true",  # Tunnel forward
-            f"control=true",  # Control enabled
-            f"display_id=0",  # Display id
-            f"show_touches=true",  # Show touches
-            f"stay_awake=false",  # scrcpy server Stay awake
-            f"codec_options=profile=1,level=2",  # Codec (video encoding) options
-            f"encoder_name=OMX.google.h264.encoder",  # Encoder name
-            f"power_off_on_close=false",  # Power off screen after server closed
-            "clipboard_autosync=false",  # auto sync clipboard
-            f"downsize_on_error=true",   # when encode screen error downsize and retry encode screen
-            "cleanup=true",     # enable cleanup thread
-            f"power_on=true",   # power on when scrcpy deploy
-            "send_device_meta=true",    # send device name, device resolution when video socket connect
-            f"send_frame_meta=false",    # receive frame_meta,
-            "send_dummy_byte=true",     # send dummy byte when video socket connect
-            "raw_video_stream=false",  # video_socket just receive raw_video_stream
+            "1.24",  # Scrcpy服务器版本
+            f"log_level=info",  # 日志等级：info, verbose...
+            f"max_size={self.max_size}",  # 最大屏幕宽度（长边）
+            f"bit_rate={self.bit_rate}",  # 视频比特率
+            f"max_fps={self.max_fps}",  # 每秒最大帧数
+            f"lock_video_orientation=-1",    # 锁定屏幕方向
+            "tunnel_forward=true",  # 隧道转发
+            f"control=true",  # 控制启用
+            f"display_id=0",  # 显示id
+            f"show_touches=true",  # 显示触摸
+            f"stay_awake=false",  # scrcpy服务器保持唤醒状态
+            f"codec_options=profile=1,level=2",  # 编码（视频编码）选项
+            f"encoder_name=OMX.google.h264.encoder",  # 编码器名称
+            f"power_off_on_close=false",  # 关闭服务器后关闭屏幕
+            "clipboard_autosync=false",  # 自动同步剪贴板
+            f"downsize_on_error=true",   # 当编码屏幕错误时缩小尺寸并重试编码屏幕
+            "cleanup=true",     # 启用清理线程
+            f"power_on=true",   # 部署scrcpy时打开电源
+            "send_device_meta=true",    # 在视频套接字连接时发送设备名称、设备分辨率
+            f"send_frame_meta=false",    # 接收帧元数据，
+            "send_dummy_byte=true",     # 在视频套接字连接时发送虚拟字节
+            "raw_video_stream=false",  # 视频套接字仅接收原始视频流
         ]
+
+        # 执行启动scrcpy服务的命令
         self.deploy_shell_socket = subprocess.Popen(commands2, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         res = self.deploy_shell_socket.stdout.readlines(3)
+
+        # 检查scrcpy服务是否成功启动
         if len(res) == 1 and "Device" in res[0].decode():
             logger.info("[%s] start scrcpy success" % self.device_id)
         else:
             logger.info("[%s] start scrcpy error" % self.device_id)
             self.deploy_shell_socket = None
+            # 关闭所有WebSocket客户端连接
             for ws_client in self.ws_client_list:
                 ws_client.close()
+            # 提出连接错误异常
             raise ConnectionError("启动scrcpy服务失败")
+
 
     async def prepare_socket(self):
         # 1.video_socket

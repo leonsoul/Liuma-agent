@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# copyright by Chras-fu of liuma
 
 import multiprocessing
 from tools.config import config
@@ -14,8 +13,8 @@ __version__ = "1.4.1"
 def startup():
     """启动服务"""
     logger.info("当前所属版本号: %s" % __version__)
-    logger.info("本机设备所属流马项目: %s", config.project)
-    logger.info("本机设备所属流马账号: %s", config.owner)
+    logger.info("本机设备所属项目: %s", config.project)
+    logger.info("本机设备所属账号: %s", config.owner)
     # 启动设备监听 android和apple独立进程
     processes = []
     if config.enable_android.lower() == "true":

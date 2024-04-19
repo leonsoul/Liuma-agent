@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# copyright by Chras-fu of liuma
+
 
 import os
 import configparser

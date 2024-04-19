@@ -123,7 +123,7 @@ class HeartbeatConnection(object):
                 logger.warning("WS connect error: %s, reconnect after %ds", str(e), cnt+1)
                 await gen.sleep(cnt+1)
         else:
-            logger.warning("连接流马失败 请检查平台地址、项目名称以及用户账号是否配置正确")
+            logger.warning("连接失败 请检查平台地址、项目名称以及用户账号是否配置正确")
 
     async def _connect(self):
         request = httpclient.HTTPRequest(self._server_ws_url, validate_cert=False)
@@ -141,7 +141,7 @@ class HeartbeatConnection(object):
 
 def update_recursive(d: dict, u: dict) -> dict:
     for k, v in u.items():
-        if isinstance(v, collections.Mapping):
+        if isinstance(v, collections.abc.Mapping):
             d[k] = update_recursive(d.get(k) or {}, v)
         else:
             d[k] = v

@@ -10,6 +10,8 @@ import shutil
 import subprocess
 import time
 import traceback
+from abc import ABC
+
 import requests
 import tornado.web
 from logzero import logger
@@ -40,7 +42,7 @@ class CorsMixin(object):
         self.set_header('Access-Control-Allow-Methods', self.CORS_METHODS)
 
 
-class AppInstallHandler(CorsMixin, tornado.web.RequestHandler):
+class AppInstallHandler(CorsMixin, tornado.web.RequestHandler, ABC):
     """安装应用"""
     _install_executor = ThreadPoolExecutor(4)
     _download_executor = ThreadPoolExecutor(1)
@@ -104,7 +106,7 @@ class AppInstallHandler(CorsMixin, tornado.web.RequestHandler):
             self.write({"status": 1000, "message": "安装错误:\n%s" % str(e)})
 
 
-class AppUnInstallHandler(CorsMixin, tornado.web.RequestHandler):
+class AppUnInstallHandler(CorsMixin, tornado.web.RequestHandler, ABC):
     """卸载应用"""
     _uninstall_executor = ThreadPoolExecutor(4)
 
@@ -136,7 +138,7 @@ class AppUnInstallHandler(CorsMixin, tornado.web.RequestHandler):
             self.write({"status": 1000, "message": "卸载错误:\n%s" % str(e)})
 
 
-class DeviceScreenshotHandler(CorsMixin, tornado.web.RequestHandler):
+class DeviceScreenshotHandler(CorsMixin, tornado.web.RequestHandler, ABC):
     """ 设备截图 """
 
     async def get(self):
@@ -160,7 +162,7 @@ class DeviceScreenshotHandler(CorsMixin, tornado.web.RequestHandler):
             self.write({"status": 1000, "message": "获取截图错误: %s" % traceback.format_exc()})
 
 
-class DeviceHierarchyHandler(CorsMixin, tornado.web.RequestHandler):
+class DeviceHierarchyHandler(CorsMixin, tornado.web.RequestHandler, ABC):
     """ 设备控件 """
 
     async def get(self):
@@ -226,6 +228,7 @@ async def async_main():
     enable_pretty_logging()
     app = make_app()
     app.listen(config.apple_port)
+    print(config.apple_port)
     # 连接流马
     conn = await heartbeat_connect(config.url, "Apple")
     global HBC_IOS
